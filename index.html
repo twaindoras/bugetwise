@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>BudgetWise — Master Your Money</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="styles.css"/>
+
+<!-- ============================================================
+  PAYSTACK  (Stripe replacement — works in Kenya + all Africa)
+  1. Sign up free at: https://dashboard.paystack.com/#/signup
+  2. Go to Settings → API Keys & Webhooks
+  3. Copy your PUBLIC key (starts with pk_live_… or pk_test_…)
+  4. Paste it into app.js → PAYSTACK_PUBLIC_KEY
+  ============================================================ -->
+<script>
+  window.__env = {
+    PAYSTACK_PUBLIC_KEY: "pk_live_1c4936cf2f7b49454c7c772d5a6bf618898bd4e5",
+    SUPABASE_URL:        "https://eijegtikhnxjhofxdfwq.supabase.co",
+    SUPABASE_ANON_KEY:   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpamVndGlraG54amhvZnhkZndxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDk3OTgsImV4cCI6MjA5NTgyNTc5OH0.0PzySvMMqWuzRlM6zxC6Am-84WW7q4C17IgvrYK812Q"
+  };
+</script>
+
+<script src="https://js.paystack.co/v2/inline.js"></script>
+
+<!-- ============================================================
+  GOOGLE ADSENSE
+  Replace ca-pub-XXXXXXXXXXXXXXXX with your Publisher ID from:
+  https://www.google.com/adsense
+  ============================================================ -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8274084306124995" crossorigin="anonymous"></script>
+
+<!-- ============================================================
+  SUPABASE (Auth / Backend)
+  Replace SUPABASE_URL and SUPABASE_ANON_KEY with values from:
+  https://app.supabase.com → Project Settings → API
+  ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- ============================================================
+  PLAID LINK
+  Requires a backend endpoint to generate link_token.
+  See: https://plaid.com/docs/link/
+  ============================================================ -->
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo"><i class="ti ti-leaf"></i>BudgetWise</div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#app">App</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <button class="nav-cta" onclick="openModal('signup')">Get started free</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-badge"><i class="ti ti-sparkles"></i> AI-powered financial wellness</div>
+  <h1>Take control of<br/><em>every dollar</em> you earn</h1>
+  <p class="hero-sub">BudgetWise tracks your spending, spots bad habits, and builds a path to your financial goals — automatically.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="openModal('signup')"><i class="ti ti-player-play"></i>Start for free</button>
+    <button class="btn-ghost" onclick="document.getElementById('app').scrollIntoView({behavior:'smooth'})">See how it works</button>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hero-stat-val">42k+</div><div class="hero-stat-label">Active users</div></div>
+    <div><div class="hero-stat-val">$2.3M</div><div class="hero-stat-label">Saved by users</div></div>
+    <div><div class="hero-stat-val">4.8★</div><div class="hero-stat-label">App store rating</div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section reveal" id="features">
+  <div class="section-label">Features</div>
+  <h2 class="section-title">Everything you need to<br/>master your money</h2>
+  <p class="section-sub">Built for real people — not accountants. Set it up in minutes and let BudgetWise do the hard work.</p>
+  <div class="features-grid">
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-chart-pie"></i></div>
+      <div class="feature-title">Smart budget tracking</div>
+      <div class="feature-desc">Auto-categorize transactions and visualize where every dollar goes with beautiful, real-time charts.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-robot"></i></div>
+      <div class="feature-title">AI spending insights</div>
+      <div class="feature-desc">Get proactive alerts before you overspend and personalized suggestions to save more each month.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-target"></i></div>
+      <div class="feature-title">Savings goals</div>
+      <div class="feature-desc">Set goals for vacations, emergencies, or big purchases. BudgetWise auto-calculates how to get there.</div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-bell"></i></div>
+      <div class="feature-title">Bill predictions</div>
+      <div class="feature-desc">Never miss a payment. BudgetWise predicts upcoming bills from your history and sends reminders. <span class="mini-badge mini-green">Pro</span></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-users"></i></div>
+      <div class="feature-title">Family budgets</div>
+      <div class="feature-desc">Share budgets with up to 5 family members, track shared expenses, and stay financially aligned. <span class="mini-badge mini-blue">Add-on</span></div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon"><i class="ti ti-lock"></i></div>
+      <div class="feature-title">Bank-grade security</div>
+      <div class="feature-desc">256-bit encryption, read-only bank connections via Plaid, and biometric authentication built in.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- APP PREVIEW -->
+<section style="padding:5rem 2rem" id="app">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label reveal">Live demo</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <h2 class="section-title reveal" style="margin-bottom:.5rem">Try the app live</h2>
+        <p style="font-size:15px;color:var(--text2);font-weight:300" class="reveal">Click the navigation tabs below to explore each screen.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" class="reveal">
+        <button class="mini-badge mini-green" style="cursor:pointer;border:none;font-size:12px;padding:6px 14px" onclick="switchApp('dashboard',this)">Dashboard</button>
+        <button class="mini-badge mini-amber" style="cursor:pointer;border:none;font-size:12px;padding:6px 14px" onclick="switchApp('budget',this)">Budget</button>
+        <button class="mini-badge mini-blue" style="cursor:pointer;border:none;font-size:12px;padding:6px 14px" onclick="switchApp('insights',this)">Insights</button>
+      </div>
+    </div>
+    <div class="app-preview reveal">
+      <div class="app-topbar">
+        <div class="app-dot" style="background:#f06060"></div>
+        <div class="app-dot" style="background:#f5b942;margin-left:5px"></div>
+        <div class="app-dot" style="background:#3ddc84;margin-left:5px"></div>
+        <div class="app-url">app.budgetwise.io — dashboard</div>
+      </div>
+      <div class="app-inner">
+        <div class="app-sidebar">
+          <div class="app-logo"><i class="ti ti-leaf"></i> BudgetWise</div>
+          <div class="app-nav-item active" onclick="switchApp('dashboard',null);setActive(this)"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+          <div class="app-nav-item" onclick="switchApp('budget',null);setActive(this)"><i class="ti ti-chart-pie"></i>Budget</div>
+          <div class="app-nav-item" onclick="switchApp('insights',null);setActive(this)"><i class="ti ti-bulb"></i>Insights</div>
+          <div class="app-nav-item" onclick="switchApp('goals',null);setActive(this)"><i class="ti ti-target"></i>Goals</div>
+          <div class="app-nav-item" style="margin-top:auto;color:var(--text3)" onclick="openModal('signup')"><i class="ti ti-crown"></i>Upgrade</div>
+        </div>
+        <div class="app-content">
+
+          <!-- DASHBOARD PAGE -->
+          <div class="app-content-page active" id="appDashboard">
+            <div class="app-header">
+              <div><div class="app-title">Good morning 👋</div><div class="app-subtitle">May 2026 — Free plan</div></div>
+              <span class="mini-badge mini-green">Live</span>
+            </div>
+            <div class="app-metrics">
+              <div class="app-metric"><div class="app-metric-label">Income</div><div class="app-metric-value" style="color:var(--green)">$3,850</div></div>
+              <div class="app-metric"><div class="app-metric-label">Spent</div><div class="app-metric-value" style="color:var(--red)">$2,140</div></div>
+              <div class="app-metric"><div class="app-metric-label">Saved</div><div class="app-metric-value" style="color:var(--blue)">$1,710</div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em">Spending by category</div>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:60px;margin-bottom:4px" id="miniBarChart"></div>
+            <div style="display:flex;gap:6px" id="miniBarLabels"></div>
+            <div style="font-size:12px;color:var(--text3);margin:1rem 0 .5rem;text-transform:uppercase;letter-spacing:.06em">Recent transactions</div>
+            <div class="mini-tx"><div class="mini-tx-icon" style="background:rgba(61,220,132,.1);color:var(--green)"><i class="ti ti-building-store"></i></div><div><div class="mini-tx-name">Grocery Market</div><div class="mini-tx-cat">May 30 · Groceries</div></div><div class="mini-tx-amount" style="color:var(--red)">-$84.20</div></div>
+            <div class="mini-tx"><div class="mini-tx-icon" style="background:rgba(91,170,245,.1);color:var(--blue)"><i class="ti ti-device-laptop"></i></div><div><div class="mini-tx-name">Salary deposit</div><div class="mini-tx-cat">May 28 · Income</div></div><div class="mini-tx-amount" style="color:var(--green)">+$1,925</div></div>
+            <div class="mini-tx"><div class="mini-tx-icon" style="background:rgba(240,96,96,.1);color:var(--red)"><i class="ti ti-coffee"></i></div><div><div class="mini-tx-name">Café &amp; Lunch</div><div class="mini-tx-cat">May 27 · Dining</div></div><div class="mini-tx-amount" style="color:var(--red)">-$18.50</div></div>
+
+            <!-- PLAID: Connect bank button -->
+            <button class="plaid-connect-btn" onclick="openPlaidLink()" style="margin-top:1rem">
+              <i class="ti ti-building-bank"></i> Connect your bank via Plaid
+            </button>
+
+            <!-- ADSENSE UNIT 1 (Dashboard) -->
+            <!-- Replace data-ad-client and data-ad-slot with your real values from AdSense -->
+            <div class="ad-wrapper" style="margin-top:1rem">
+              <span class="ad-tag">Ad</span>
+              <ins class="adsbygoogle"
+                   style="display:block;min-height:60px"
+                   data-ad-client="ca-pub-8274084306124995"
+                   data-ad-slot="5976401930"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+              <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+          </div>
+
+          <!-- BUDGET PAGE -->
+          <div class="app-content-page" id="appBudget">
+            <div class="app-header"><div><div class="app-title">Monthly budgets</div><div class="app-subtitle">May 2026</div></div><span class="mini-badge mini-amber">3 alerts</span></div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.06em">Category limits</div>
+            <div class="pbar-row"><div class="pbar-name">🛒 Groceries</div><div class="pbar"><div class="pbar-fill" style="width:68%;background:var(--green)"></div></div><div class="pbar-pct">68%</div></div>
+            <div class="pbar-row"><div class="pbar-name">🍕 Dining</div><div class="pbar"><div class="pbar-fill" style="width:88%;background:var(--amber)"></div></div><div class="pbar-pct">88%</div></div>
+            <div class="pbar-row"><div class="pbar-name">🚗 Transport</div><div class="pbar"><div class="pbar-fill" style="width:40%;background:var(--green)"></div></div><div class="pbar-pct">40%</div></div>
+            <div class="pbar-row"><div class="pbar-name">🎮 Entertainment</div><div class="pbar"><div class="pbar-fill" style="width:97%;background:var(--red)"></div></div><div class="pbar-pct">97%</div></div>
+            <div class="pbar-row"><div class="pbar-name">💊 Health</div><div class="pbar"><div class="pbar-fill" style="width:30%;background:var(--green)"></div></div><div class="pbar-pct">30%</div></div>
+            <div class="pbar-row"><div class="pbar-name">🏠 Housing</div><div class="pbar"><div class="pbar-fill" style="width:100%;background:var(--red)"></div></div><div class="pbar-pct">100%</div></div>
+            <div style="background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.2);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-top:1rem;font-size:12px;color:var(--amber);display:flex;gap:8px;align-items:center"><i class="ti ti-alert-triangle"></i>Dining and Entertainment budgets are almost full — 2 days left in May.</div>
+
+            <!-- ADSENSE UNIT 2 (Budget) -->
+            <!-- Replace data-ad-client and data-ad-slot with your real values from AdSense -->
+            <div class="ad-wrapper" style="margin-top:1rem">
+              <span class="ad-tag">Ad</span>
+              <ins class="adsbygoogle"
+                   style="display:block;min-height:60px"
+                   data-ad-client="ca-pub-8274084306124995"
+                   data-ad-slot="5976401930"
+                   data-ad-format="auto"
+                   data-full-width-responsive="true"></ins>
+              <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            </div>
+          </div>
+
+          <!-- INSIGHTS PAGE -->
+          <div class="app-content-page" id="appInsights">
+            <div class="app-header"><div><div class="app-title">AI Insights</div><div class="app-subtitle">Personalized for you</div></div><span class="mini-badge mini-purple" style="background:rgba(167,139,250,.1);color:var(--purple)">AI</span></div>
+            <div class="insight-chip"><div class="insight-dot" style="background:var(--red)"></div><div><strong>Entertainment overspend:</strong> You're 97% through your budget with 2 days left. Pause Netflix and Spotify until June to stay within limit.</div></div>
+            <div class="insight-chip"><div class="insight-dot" style="background:var(--amber)"></div><div><strong>Dining alert:</strong> You've spent $176 of your $200 dining budget. Cooking at home this week could save ~$40.</div></div>
+            <div class="insight-chip"><div class="insight-dot" style="background:var(--green)"></div><div><strong>Savings milestone:</strong> You've saved $1,710 this month (44% of income). On track for a $20,520 annual savings rate!</div></div>
+            <div class="insight-chip"><div class="insight-dot" style="background:var(--blue)"></div><div><strong>Bill incoming:</strong> Your electricity bill (~$62) typically arrives in the next 3 days. Make sure funds are available. <span class="mini-badge mini-blue" style="font-size:10px;padding:2px 7px">Pro</span></div></div>
+            <div style="background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-radius:var(--radius-sm);padding:.75rem 1rem;margin-top:.5rem;font-size:12px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">Unlock bill predictions &amp; net worth tracking<span class="mini-badge mini-green" style="cursor:pointer" onclick="openModal('upgrade')">Go Pro →</span></div>
+          </div>
+
+          <!-- GOALS PAGE -->
+          <div class="app-content-page" id="appGoals">
+            <div class="app-header"><div><div class="app-title">Savings goals</div><div class="app-subtitle">2 active goals</div></div><span class="mini-badge mini-green">On track</span></div>
+            <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:1rem;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><span style="font-size:14px">🏖️ Emergency fund</span><span class="mini-badge mini-green">68%</span></div>
+              <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:5px"><div style="width:68%;height:100%;background:var(--green);border-radius:4px"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)"><span>$3,400 saved</span><span>$5,000 goal</span></div>
+            </div>
+            <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:1rem;margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><span style="font-size:14px">✈️ Vacation fund</span><span class="mini-badge mini-amber">32%</span></div>
+              <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:5px"><div style="width:32%;height:100%;background:var(--amber);border-radius:4px"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)"><span>$960 saved</span><span>$3,000 goal</span></div>
+            </div>
+            <div style="background:rgba(61,220,132,.04);border:1px dashed var(--border2);border-radius:var(--radius-sm);padding:.75rem 1rem;font-size:13px;color:var(--text2);text-align:center;cursor:pointer" onclick="openModal('signup')"><i class="ti ti-plus" style="margin-right:6px;color:var(--green)"></i>Add a new goal</div>
+          </div>
+
+        </div><!-- /.app-content -->
+      </div><!-- /.app-inner -->
+    </div><!-- /.app-preview -->
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MONETIZATION -->
+<section class="section reveal" id="monetization">
+  <div class="section-label">How you earn</div>
+  <h2 class="section-title">Three revenue streams,<br/>one app</h2>
+  <p class="section-sub">BudgetWise is designed to monetize at every stage of the user journey — from first open to power user.</p>
+  <div class="mono-grid">
+    <div class="mono-card">
+      <div class="mono-icon"><i class="ti ti-speakerphone"></i></div>
+      <div class="mono-title">Display advertising</div>
+      <div class="mono-desc">Targeted, contextual ads shown to free-tier users on dashboard, budget, and insights screens.</div>
+      <ul class="mono-list">
+        <li>Google AdSense / AdMob</li>
+        <li>Finance-niche ads (high CPM)</li>
+        <li>Sponsorship placements</li>
+        <li>Affiliate CPA offers</li>
+      </ul>
+    </div>
+    <div class="mono-card" style="border-color:var(--border2)">
+      <div class="mono-icon"><i class="ti ti-refresh"></i></div>
+      <div class="mono-title">Subscriptions</div>
+      <div class="mono-desc">Recurring revenue from Pro ($4.99/mo) and Annual Pro ($35.99/yr) plans — ad-free with premium features.</div>
+      <ul class="mono-list">
+        <li>Monthly recurring revenue</li>
+        <li>Annual plan (40% discount)</li>
+        <li>In-app upgrade prompts</li>
+        <li>Free trial to convert users</li>
+      </ul>
+    </div>
+    <div class="mono-card">
+      <div class="mono-icon"><i class="ti ti-shopping-bag"></i></div>
+      <div class="mono-title">One-time purchases</div>
+      <div class="mono-desc">Power features and premium reports available as standalone add-ons for any user — free or paid.</div>
+      <ul class="mono-list">
+        <li>Annual tax export report</li>
+        <li>Investment tracker module</li>
+        <li>Family budget pack</li>
+        <li>Net worth snapshot</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section class="section reveal" id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title">Start free, upgrade<br/>when ready</h2>
+  <p class="section-sub">No credit card required. Upgrade or cancel any time.</p>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-plan">Free</div>
+      <div class="pricing-price">$0<span> / month</span></div>
+      <div class="pricing-desc">Perfect for getting started with budgeting basics.</div>
+      <div class="pricing-sep"></div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Dashboard &amp; spending overview</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>5 budget categories</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Basic AI insights</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>1 savings goal</div>
+      <div class="pricing-feat locked"><i class="ti ti-x"></i>Ads displayed</div>
+      <div class="pricing-feat locked"><i class="ti ti-x"></i>Bill predictions</div>
+      <div class="pricing-feat locked"><i class="ti ti-x"></i>Unlimited goals</div>
+      <button class="pricing-btn" onclick="openModal('signup')">Get started free</button>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-popular">Most popular</div>
+      <div class="pricing-plan">Pro</div>
+      <div class="pricing-price">$4.99<span> / month</span></div>
+      <div class="pricing-desc">For people serious about building financial health.</div>
+      <div class="pricing-sep"></div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Everything in Free</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Unlimited budget categories</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Advanced AI insights &amp; alerts</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Bill predictions &amp; reminders</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Unlimited savings goals</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Ad-free experience</div>
+      <!-- Paystack: triggers popup checkout for Pro Monthly price -->
+      <button class="pricing-btn primary" onclick="paystackCheckout('pro')">Start Pro — $4.99/mo</button>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-plan" style="display:flex;align-items:center;gap:8px">Annual Pro <span class="mini-badge mini-green">Save 40%</span></div>
+      <div class="pricing-price">$35.99<span> / year</span></div>
+      <div class="pricing-desc">All Pro features at a steep discount — best value.</div>
+      <div class="pricing-sep"></div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>All Pro features</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Priority customer support</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Early access to new features</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Export data to CSV/PDF</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Equivalent to $3.00/month</div>
+      <div class="pricing-feat"><i class="ti ti-check"></i>Cancel anytime</div>
+      <!-- Paystack: triggers popup checkout for Annual price -->
+      <button class="pricing-btn" style="border-color:var(--purple);color:var(--purple)" onclick="paystackCheckout('annual')">Get Annual Pro</button>
+    </div>
+  </div>
+
+  <!-- ONE-TIME ADD-ONS -->
+  <div style="margin-top:3rem">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:1.25rem;font-weight:500">One-time add-ons — available on any plan</div>
+    <div class="addons-grid">
+      <!-- Paystack: each addon triggers paystackCheckout with its own plan/amount -->
+      <div class="addon-card" onclick="paystackCheckout('tax_report')">
+        <div class="addon-icon" style="background:rgba(245,185,66,.1)"><i class="ti ti-file-analytics" style="color:var(--amber)"></i></div>
+        <div><div class="addon-title">2025 Tax Report</div><div class="addon-desc">Full annual spending export for tax prep</div></div>
+        <div class="addon-price">$2.99</div>
+      </div>
+      <div class="addon-card" onclick="paystackCheckout('investment_tracker')">
+        <div class="addon-icon" style="background:rgba(91,170,245,.1)"><i class="ti ti-trending-up" style="color:var(--blue)"></i></div>
+        <div><div class="addon-title">Investment tracker</div><div class="addon-desc">Connect stocks, crypto &amp; ETF portfolios</div></div>
+        <div class="addon-price">$4.99</div>
+      </div>
+      <div class="addon-card" onclick="paystackCheckout('family_pack')">
+        <div class="addon-icon" style="background:rgba(167,139,250,.1)"><i class="ti ti-users" style="color:var(--purple)"></i></div>
+        <div><div class="addon-title">Family budget pack</div><div class="addon-desc">Shared budgets for up to 5 members</div></div>
+        <div class="addon-price">$7.99</div>
+      </div>
+      <div class="addon-card" onclick="paystackCheckout('net_worth')">
+        <div class="addon-icon" style="background:rgba(61,220,132,.1)"><i class="ti ti-report-money" style="color:var(--green)"></i></div>
+        <div><div class="addon-title">Net worth snapshot</div><div class="addon-desc">Assets vs liabilities visual report</div></div>
+        <div class="addon-price">$1.99</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section class="section reveal">
+  <div class="section-label">Social proof</div>
+  <h2 class="section-title">Loved by real users</h2>
+  <p class="section-sub">Join thousands who've already transformed their relationship with money.</p>
+  <div class="testi-grid">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"I paid off $8,000 in credit card debt in 11 months using BudgetWise. The spending alerts are a game changer — I had no idea how much I was wasting on dining out."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(61,220,132,.15);color:var(--green)">AM</div>
+        <div><div class="testi-name">Amara Mensah</div><div class="testi-role">Teacher · Pro user</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-text">"Finally an app that doesn't make me feel judged. The AI insights are genuinely helpful and the annual plan is a steal. Cancelled three other finance apps after this."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(91,170,245,.15);color:var(--blue)">JK</div>
+        <div><div class="testi-name">James Kariuki</div><div class="testi-role">Software dev · Annual Pro</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★☆</div>
+      <div class="testi-text">"Set up the family budget pack and my husband and I are finally on the same page about money. The shared dashboard prevents so many arguments. Worth every cent."</div>
+      <div class="testi-author">
+        <div class="testi-avatar" style="background:rgba(167,139,250,.15);color:var(--purple)">PN</div>
+        <div><div class="testi-name">Priya Nair</div><div class="testi-role">Marketing manager · Pro</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section class="section reveal" id="faq">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:3rem">
+      <div class="section-label">FAQ</div>
+      <h2 class="section-title">Common questions</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is BudgetWise really free? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">Yes — the free tier is genuinely useful and never expires. You get a dashboard, 5 budget categories, basic AI insights, and one savings goal. Ads are shown to free users, which is how we keep it free. Upgrade to Pro to remove ads and unlock all features.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">How do you keep my banking data safe? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">BudgetWise uses Plaid for read-only bank connections — we can see transactions but never move money. All data is encrypted with AES-256 at rest and TLS 1.3 in transit. We never sell your financial data.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription anytime? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">Absolutely. Cancel from Settings → Subscription at any time. You keep Pro access until the end of your billing period, then revert to the free tier. No cancellation fees, ever.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">What banks does BudgetWise support? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">Via Plaid, BudgetWise supports over 12,000 financial institutions across the US, Canada, UK, and Europe. If your bank isn't supported, you can also add transactions manually.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Are the one-time add-ons a single payment? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">Yes — add-ons like the Tax Report, Investment Tracker, and Family Budget Pack are single, one-time payments. No recurring charge. Once purchased, they're yours permanently.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Is there a mobile app? <i class="ti ti-chevron-down"></i></button>
+        <div class="faq-a">Yes! BudgetWise is available on iOS and Android, as well as this web version. Your data syncs in real time across all platforms so you can track spending on the go.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="section-label">Get started</div>
+  <h2 class="cta-title">Your best financial year<br/>starts today</h2>
+  <p class="cta-sub">Free forever. No credit card required. Takes 2 minutes to set up.</p>
+  <button class="btn-primary" style="margin:0 auto" onclick="openModal('signup')"><i class="ti ti-rocket"></i>Create your free account</button>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div style="font-family:var(--font-display);font-size:22px;color:var(--green);display:flex;align-items:center;gap:8px"><i class="ti ti-leaf"></i>BudgetWise</div>
+      <p>The smartest way to track your money, crush debt, and build real wealth — for free.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#app">Demo</a>
+      <a href="#" onclick="openModal('signup')">Download app</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">About</a>
+      <a href="#">Blog</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="#">Privacy policy</a>
+      <a href="#">Terms of service</a>
+      <a href="#">Cookie settings</a>
+      <a href="#">Security</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 BudgetWise. All rights reserved.</p>
+    <p style="color:var(--text3)">Made with ♥ to help people build wealth</p>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox">
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
+
+<script src="app.js" defer></script>
+</body>
+</html>

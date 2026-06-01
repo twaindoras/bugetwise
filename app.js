@@ -10,7 +10,7 @@
    OR temporarily hardcode test keys (pk_test_... only) here.
    ================================================================ */
 
-const PAYSTACK_PUBLIC_KEY = (window.__env && window.__env.PAYSTACK_PUBLIC_KEY) || '';
+const PAYSTACK_PUBLIC_KEY = 'pk_live_1c4936cf2f7b49454c7c772d5a6bf618898bd4e5';
 const PAYSTACK_CURRENCY   = 'KES';
 
 const PAYSTACK_PRICES = {
@@ -22,8 +22,8 @@ const PAYSTACK_PRICES = {
   net_worth:          { amount: 19900,  label: 'Net Worth Snapshot — KES 199'        },
 };
 
-const SUPABASE_URL      = (window.__env && window.__env.SUPABASE_URL)      || '';
-const SUPABASE_ANON_KEY = (window.__env && window.__env.SUPABASE_ANON_KEY) || '';
+const SUPABASE_URL      = 'https://eijegtikhnxjhofxdfwq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVpamVndGlraG54amhvZnhkZndxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNDk3OTgsImV4cCI6MjA5NTgyNTc5OH0.0PzySvMMqWuzRlM6zxC6Am-84WW7q4C17IgvrYK812Q';
 
 // PLAID (optional — build backend endpoints to enable)
 const PLAID_LINK_TOKEN_ENDPOINT = '/api/create-link-token';
@@ -34,9 +34,7 @@ const PLAID_EXCHANGE_ENDPOINT   = '/api/exchange-token';
    ================================================================ */
 let supabase = null;
 try {
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 } catch (e) {
   console.warn('Supabase init failed:', e);
 }
@@ -45,10 +43,6 @@ try {
    PAYSTACK CHECKOUT
    ================================================================ */
 function paystackCheckout(planKey) {
-  if (!PAYSTACK_PUBLIC_KEY) {
-    showToast('Payment not configured — add PAYSTACK_PUBLIC_KEY to Vercel env vars.', 'error');
-    return;
-  }
   const config = PAYSTACK_PRICES[planKey];
   if (!config) { showToast('Unknown plan: ' + planKey, 'error'); return; }
 
@@ -315,10 +309,11 @@ function showToast(msg, type = 'success') {
 /* ================================================================
    APP SWITCHER / FAQ / SCROLL REVEAL
    ================================================================ */
-function switchApp(id) {
+function switchApp(id, el) {
   document.querySelectorAll('.app-content-page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('app' + id.charAt(0).toUpperCase() + id.slice(1));
   if (page) page.classList.add('active');
+  if (el) setActive(el);
 }
 
 function setActive(el) {

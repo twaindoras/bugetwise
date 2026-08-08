@@ -239,6 +239,124 @@ async function supabaseSignIn(email, password) {
 }
 
 /* ================================================================
+   MY BUDGET — real, user-scoped transaction data
+   Backed by the `transactions` table (see supabase/migration.sql).
+   This is the actual data layer — separate from the static
+   marketing preview above, which is illustrative only.
+   ================================================================ */
+const CATEGORY_EMOJI = {
+  Groceries: '🛒', Dining: '🍕', Transport: '🚗', Entertainment: '🎮',
+  Health: '💊', Housing: '🏠', Income: '💼', Other: '💸',
+};
+
+async function getCurrentUser() {
+  if (!supabase) return null;
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.user || null;
+}
+
+async function fetchTransactions() {
+  const user = await getCurrentUser();
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) { console.error('fetchTransactions failed:', error); return []; }
+  return data;
+}
+
+async function addTransaction({ type, category, description, amount }) {
+  const user = await getCurrentUser();
+  if (!user) { showToast('Sign in to add a transaction.', 'error'); return false; }
+  const amt = Number(amount);
+  if (!amt || amt <= 0) { showToast('Enter a valid amount.', 'error'); return false; }
+  const { error } = await supabase.from('transactions').insert({
+    user_id: user.id, type, category, description, amount: amt,
+  });
+  if (error) { showToast('Could not save transaction: ' + error.message, 'error'); return false; }
+  showToast('Transaction added.');
+  return true;
+}
+
+async function deleteTransaction(id) {
+  const user = await getCurrentUser();
+  if (!user) return;
+  const { error } = await supabase.from('transactions').delete().eq('id', id).eq('user_id', user.id);
+  if (error) { showToast('Could not delete: ' + error.message, 'error'); return; }
+  await loadMyBudget();
+}
+
+async function loadMyBudget() {
+  const panel = document.getElementById('myBudgetPanel');
+  const signedOut = document.getElementById('myBudgetSignedOut');
+  const user = await getCurrentUser();
+
+  if (!user) {
+    if (panel) panel.style.display = 'none';
+    if (signedOut) signedOut.style.display = 'block';
+    return;
+  }
+  if (panel) panel.style.display = 'block';
+  if (signedOut) signedOut.style.display = 'none';
+
+  const rows = await fetchTransactions();
+  const { income, spent, saved, byCategory } = window.BudgetUtils.summarizeTransactions(rows);
+
+  document.getElementById('mbIncome').textContent = `$${income.toFixed(2)}`;
+  document.getElementById('mbSpent').textContent = `$${spent.toFixed(2)}`;
+  document.getElementById('mbSaved').textContent = `$${saved.toFixed(2)}`;
+
+  const catEl = document.getElementById('mbCategoryBreakdown');
+  catEl.innerHTML = Object.keys(byCategory).length === 0
+    ? '<div style="font-size:13px;color:var(--text3)">No expenses logged yet.</div>'
+    : Object.entries(byCategory).map(([cat, amt]) => {
+        const pct = spent > 0 ? Math.round((amt / spent) * 100) : 0;
+        const emoji = CATEGORY_EMOJI[cat] || '💸';
+        return `<div class="pbar-row"><div class="pbar-name">${emoji} ${cat}</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--blue)"></div></div><div class="pbar-pct">$${amt.toFixed(2)}</div></div>`;
+      }).join('');
+
+  const listEl = document.getElementById('mbTransactionList');
+  listEl.innerHTML = rows.length === 0
+    ? '<div style="font-size:13px;color:var(--text3)">No transactions yet — add your first one above.</div>'
+    : rows.slice(0, 10).map(r => {
+        const emoji = CATEGORY_EMOJI[r.category] || '💸';
+        const sign = r.type === 'income' ? '+' : '-';
+        const color = r.type === 'income' ? 'var(--green)' : 'var(--red)';
+        const date = new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        return `<div class="mini-tx">
+          <div class="mini-tx-icon" style="background:rgba(120,120,120,.1)">${emoji}</div>
+          <div><div class="mini-tx-name">${r.description || r.category}</div><div class="mini-tx-cat">${date} · ${r.category}</div></div>
+          <div class="mini-tx-amount" style="color:${color}">${sign}$${Number(r.amount).toFixed(2)}</div>
+          <button onclick="deleteTransaction('${r.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;margin-left:8px" title="Delete">✕</button>
+        </div>`;
+      }).join('');
+}
+
+async function submitAddTransaction() {
+  const type = document.getElementById('mbType').value;
+  const category = document.getElementById('mbCategory').value;
+  const description = document.getElementById('mbDescription').value.trim();
+  const amount = document.getElementById('mbAmount').value;
+  const ok = await addTransaction({ type, category, description, amount });
+  if (ok) {
+    document.getElementById('mbDescription').value = '';
+    document.getElementById('mbAmount').value = '';
+    await loadMyBudget();
+  }
+}
+
+// Keep the "My Budget" panel in sync with auth state
+if (typeof supabase !== 'undefined' && supabase) {
+  supabase.auth.onAuthStateChange((_event, _session) => { loadMyBudget(); });
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => { loadMyBudget(); });
+}
+
+/* ================================================================
    PLAID LINK  (enabled once you build the backend endpoints)
    ================================================================ */
 async function openPlaidLink() {

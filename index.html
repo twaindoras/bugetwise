@@ -74,9 +74,9 @@
     <button class="btn-ghost" onclick="document.getElementById('app').scrollIntoView({behavior:'smooth'})">See how it works</button>
   </div>
   <div class="hero-stats">
-    <div><div class="hero-stat-val">42k+</div><div class="hero-stat-label">Active users</div></div>
-    <div><div class="hero-stat-val">$2.3M</div><div class="hero-stat-label">Saved by users</div></div>
-    <div><div class="hero-stat-val">4.8★</div><div class="hero-stat-label">App store rating</div></div>
+    <div><div class="hero-stat-val">Open source</div><div class="hero-stat-label">Full code on GitHub</div></div>
+    <div><div class="hero-stat-val">100%</div><div class="hero-stat-label">Real Supabase-backed data</div></div>
+    <div><div class="hero-stat-val">Built solo</div><div class="hero-stat-label">by a freelance developer</div></div>
   </div>
 </section>
 
@@ -254,6 +254,56 @@
 
 <div class="divider"></div>
 
+<!-- MY BUDGET — real, functional, backed by Supabase (not a mockup) -->
+<section style="padding:5rem 2rem" id="myBudget">
+  <div style="max-width:700px;margin:0 auto">
+    <div class="section-label reveal">Your account</div>
+    <h2 class="section-title reveal" style="margin-bottom:.5rem">My Budget</h2>
+    <p style="font-size:15px;color:var(--text2);font-weight:300;margin-bottom:2rem" class="reveal">
+      Unlike the illustrated preview above, this section reads and writes real data to your account.
+    </p>
+
+    <div id="myBudgetSignedOut" style="display:none;background:var(--bg2);border-radius:var(--radius-sm);padding:2rem;text-align:center">
+      <p style="color:var(--text2);margin-bottom:1rem">Sign in to see and log your real transactions.</p>
+      <button class="mini-badge mini-green" style="cursor:pointer;border:none;padding:8px 18px" onclick="openModal('signup')">Create free account</button>
+    </div>
+
+    <div id="myBudgetPanel" class="app-preview" style="display:none;padding:1.5rem">
+      <div class="app-metrics">
+        <div class="app-metric"><div class="app-metric-label">Income</div><div class="app-metric-value" id="mbIncome" style="color:var(--green)">$0.00</div></div>
+        <div class="app-metric"><div class="app-metric-label">Spent</div><div class="app-metric-value" id="mbSpent" style="color:var(--red)">$0.00</div></div>
+        <div class="app-metric"><div class="app-metric-label">Saved</div><div class="app-metric-value" id="mbSaved" style="color:var(--blue)">$0.00</div></div>
+      </div>
+
+      <div style="font-size:12px;color:var(--text3);margin:1rem 0 .5rem;text-transform:uppercase;letter-spacing:.06em">Add a transaction</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+        <select id="mbType" class="modal-input" style="flex:1;min-width:100px">
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+        </select>
+        <select id="mbCategory" class="modal-input" style="flex:1;min-width:120px">
+          <option>Groceries</option><option>Dining</option><option>Transport</option>
+          <option>Entertainment</option><option>Health</option><option>Housing</option>
+          <option>Income</option><option>Other</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem">
+        <input class="modal-input" id="mbDescription" placeholder="Description (optional)" style="flex:2;min-width:150px"/>
+        <input class="modal-input" id="mbAmount" placeholder="Amount" type="number" min="0" step="0.01" style="flex:1;min-width:100px"/>
+        <button class="mini-badge mini-green" style="cursor:pointer;border:none;padding:8px 18px" onclick="submitAddTransaction()">Add</button>
+      </div>
+
+      <div style="font-size:12px;color:var(--text3);margin:1.5rem 0 .5rem;text-transform:uppercase;letter-spacing:.06em">Spending by category</div>
+      <div id="mbCategoryBreakdown"></div>
+
+      <div style="font-size:12px;color:var(--text3);margin:1.5rem 0 .5rem;text-transform:uppercase;letter-spacing:.06em">Recent transactions</div>
+      <div id="mbTransactionList"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
 <!-- MONETIZATION -->
 <section class="section reveal" id="monetization">
   <div class="section-label">How you earn</div>
@@ -380,37 +430,17 @@
 
 <div class="divider"></div>
 
-<!-- TESTIMONIALS -->
+<!-- ABOUT THIS PROJECT -->
 <section class="section reveal">
-  <div class="section-label">Social proof</div>
-  <h2 class="section-title">Loved by real users</h2>
-  <p class="section-sub">Join thousands who've already transformed their relationship with money.</p>
-  <div class="testi-grid">
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <div class="testi-text">"I paid off $8,000 in credit card debt in 11 months using BudgetWise. The spending alerts are a game changer — I had no idea how much I was wasting on dining out."</div>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:rgba(61,220,132,.15);color:var(--green)">AM</div>
-        <div><div class="testi-name">Amara Mensah</div><div class="testi-role">Teacher · Pro user</div></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <div class="testi-text">"Finally an app that doesn't make me feel judged. The AI insights are genuinely helpful and the annual plan is a steal. Cancelled three other finance apps after this."</div>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:rgba(91,170,245,.15);color:var(--blue)">JK</div>
-        <div><div class="testi-name">James Kariuki</div><div class="testi-role">Software dev · Annual Pro</div></div>
-      </div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★☆</div>
-      <div class="testi-text">"Set up the family budget pack and my husband and I are finally on the same page about money. The shared dashboard prevents so many arguments. Worth every cent."</div>
-      <div class="testi-author">
-        <div class="testi-avatar" style="background:rgba(167,139,250,.15);color:var(--purple)">PN</div>
-        <div><div class="testi-name">Priya Nair</div><div class="testi-role">Marketing manager · Pro</div></div>
-      </div>
-    </div>
-  </div>
+  <div class="section-label">About this project</div>
+  <h2 class="section-title">Built as a real, working sample</h2>
+  <p class="section-sub">
+    BudgetWise is a solo project built to practice full-stack development end to end —
+    authentication, a real Postgres database with row-level security, and payment integration.
+    The "My Budget" section below the demo preview is fully functional: create an account,
+    log a transaction, and watch the numbers update from real data.
+    <a href="https://github.com/twaindoras/bugetwise" target="_blank" style="color:var(--green)">View the source on GitHub →</a>
+  </p>
 </section>
 
 <div class="divider"></div>
@@ -429,7 +459,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">How do you keep my banking data safe? <i class="ti ti-chevron-down"></i></button>
-        <div class="faq-a">BudgetWise uses Plaid for read-only bank connections — we can see transactions but never move money. All data is encrypted with AES-256 at rest and TLS 1.3 in transit. We never sell your financial data.</div>
+        <div class="faq-a">BudgetWise is built to use Plaid for read-only bank connections in production. In this build, the "Connect your bank" button is wired up on the frontend but the backend token exchange isn't implemented yet — for now, transactions are added manually in the "My Budget" section.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription anytime? <i class="ti ti-chevron-down"></i></button>
@@ -437,7 +467,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">What banks does BudgetWise support? <i class="ti ti-chevron-down"></i></button>
-        <div class="faq-a">Via Plaid, BudgetWise supports over 12,000 financial institutions across the US, Canada, UK, and Europe. If your bank isn't supported, you can also add transactions manually.</div>
+        <div class="faq-a">Plaid itself supports thousands of institutions, but automatic bank sync isn't wired up in this build yet (see above) — add transactions manually in "My Budget" for now.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Are the one-time add-ons a single payment? <i class="ti ti-chevron-down"></i></button>
@@ -445,7 +475,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Is there a mobile app? <i class="ti ti-chevron-down"></i></button>
-        <div class="faq-a">Yes! BudgetWise is available on iOS and Android, as well as this web version. Your data syncs in real time across all platforms so you can track spending on the go.</div>
+        <div class="faq-a">Not currently — BudgetWise is a web app for now. A mobile version isn't built yet, but the same Supabase backend would support one.</div>
       </div>
     </div>
   </div>
@@ -505,6 +535,7 @@
 <!-- TOAST -->
 <div class="toast" id="toast"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
 
+<script src="budget-utils.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

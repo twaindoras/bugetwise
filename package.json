@@ -1,0 +1,10 @@
+{
+  "name": "budgetwise",
+  "version": "1.0.0",
+  "description": "A personal finance web app with real Supabase-backed transactions and Paystack checkout.",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "npx serve ."
+  },
+  "license": "MIT"
+}
